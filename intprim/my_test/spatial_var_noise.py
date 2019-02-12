@@ -57,7 +57,8 @@ def spatial_robustness():
 
     phase_velocities = []
     translation_variance = 0.1
-    train_noise_variance = 1.0
+    train_noise_variance = 0.2
+
 
     train_trajectories = [] #for plot
     # Add 30 demonstrations which are generated from the writing sample
@@ -68,7 +69,11 @@ def spatial_robustness():
         xdata_t = xdata + translation_noise_x
         ydata_t = ydata + translation_noise_y
 
-        # train_trajectory = np.array([xdata_t, ydata_t])
+
+
+        train_trajectory = np.array([xdata_t, ydata_t])
+
+
 
         # apply rotation noise
         rotation_noise = 10*np.random.normal(0,1)
@@ -78,12 +83,18 @@ def spatial_robustness():
             xdata_t * np.sin(theta) + ydata_t * np.cos(theta)
         ])
 
+        # train_noise = np.random.normal(np.zeros(train_trajectory.shape), train_trajectory)
+        # train_noise_weight = test_noise_weight = 0.5 * np.random.rand(1,1)
+        # train_trajectory_noisy = train_trajectory + (train_noise * train_noise_weight)
+
+
         # Apply an additional element-wise noise on top, then add this trajectory as a demonstration.
-        primitive.add_demonstration(np.random.normal(train_trajectory, train_noise_variance))
+        train_trajectory_noisy = np.random.normal(train_trajectory, train_noise_variance)
+        primitive.add_demonstration(train_trajectory_noisy)
         # Keep track of the phase velocity for each full demonstration. We'll use it later when testing.
         phase_velocities.append(1.0 / train_trajectory.shape[1])
 
-        train_trajectories.append(train_trajectory)
+        train_trajectories.append(train_trajectory_noisy)
 
 
     # translation
@@ -94,7 +105,7 @@ def spatial_robustness():
     # ])
 
     # rotation
-    theta = (5 * 3.14) / (180)
+    theta = (30 * 3.14) / (180)
     test_trajectory = np.array([
         xdata*np.cos(theta)-ydata*np.sin(theta),
         xdata * np.sin(theta) + ydata * np.cos(theta)

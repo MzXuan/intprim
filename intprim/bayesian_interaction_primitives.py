@@ -3,6 +3,7 @@
 This module implements Bayesian Interaction Primitives and the corresponding EKF SLAM algorithm.
 """
 
+from __future__ import division
 import basis_model
 from enum import Enum
 import matplotlib.pyplot as plt
@@ -347,6 +348,29 @@ class BayesianInteractionPrimitive(object):
         if (mean_trajectory is not None):
             plt.plot(mean_trajectory[0], mean_trajectory[1], color="#85d87f", label="Mean")
         plt.legend()
+
+        fig.suptitle('Probable trajectory')
+
+        fig = plt.figure()
+
+        obs_ratio = len(partial_observed_trajectory[0])/len(train_trajectories[0][0])
+        for index, degree in enumerate(gen_trajectory):
+            new_plot = plt.subplot(len(trajectory), 1,  index+1)
+
+            domain = np.linspace(0, obs_ratio, len(partial_observed_trajectory[index]))
+            new_plot.plot(domain, partial_observed_trajectory[index], color="#6ba3ff", label="Observed.")
+
+            domain = np.linspace(obs_ratio, 1, len(gen_trajectory[index]))
+            new_plot.plot(domain, gen_trajectory[index], color="#ff6a6a", label="Generated.")
+
+
+
+            if (mean_trajectory is not None):
+                domain = np.linspace(0, 1, len(mean_trajectory[index]))
+                new_plot.plot(domain, mean_trajectory[index], color="#85d87f", label="Mean.")
+
+            new_plot.set_title('Trajectory for degree ' + self.dof_names[index])
+            new_plot.legend()
 
         plt.show()
 
