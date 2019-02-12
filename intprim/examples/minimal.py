@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.random
-from .. import bayesian_interaction_primitives as bip
+from intprim import bayesian_interaction_primitives as bip
 
 # Disclaimer:
 # Spatial noise and temporal noise are at odds with each other in conditioning.
@@ -51,3 +51,11 @@ def minimal():
     # Plot the mean learned trajectory, the generated trajectory, and the test trajectory.
     mean_trajectory = primitive.get_mean_trajectory()
     primitive.plot_partial_trajectory(gen_trajectory, test_trajectory[:, :observable_samples], mean_trajectory)
+
+
+def main():
+    minimal()
+
+
+if __name__ == '__main__':
+    main()

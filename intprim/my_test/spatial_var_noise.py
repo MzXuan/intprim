@@ -56,30 +56,56 @@ def spatial_robustness():
     ])
 
     phase_velocities = []
-    translation_variance = 4.0
+    translation_variance = 0.1
     train_noise_variance = 1.0
 
+    train_trajectories = [] #for plot
     # Add 30 demonstrations which are generated from the writing sample
     for demo in range(30):
         # Apply a random translation
-        translation_noise = np.random.normal(0.0, translation_variance)
-        train_trajectory = np.array([xdata + translation_noise, ydata + translation_noise])
+        translation_noise_x = np.random.normal(0.0, translation_variance)
+        translation_noise_y = np.random.normal(0.0, translation_variance)
+        xdata_t = xdata + translation_noise_x
+        ydata_t = ydata + translation_noise_y
+
+        # train_trajectory = np.array([xdata_t, ydata_t])
+
+        # apply rotation noise
+        rotation_noise = 10*np.random.normal(0,1)
+        theta = (rotation_noise * 3.14) / (180)
+        train_trajectory = np.array([
+            xdata_t*np.cos(theta)-ydata_t*np.sin(theta),
+            xdata_t * np.sin(theta) + ydata_t * np.cos(theta)
+        ])
+
         # Apply an additional element-wise noise on top, then add this trajectory as a demonstration.
         primitive.add_demonstration(np.random.normal(train_trajectory, train_noise_variance))
         # Keep track of the phase velocity for each full demonstration. We'll use it later when testing.
         phase_velocities.append(1.0 / train_trajectory.shape[1])
 
+        train_trajectories.append(train_trajectory)
+
+
     # translation
+    # test_trajectory = np.array([
+    #     xdata - translation_variance * 0.8,
+    #     # Note that we're translating by the variance to simulate an extreme case, rather than sampling from a normal distribution.
+    #     ydata - translation_variance * 0.8
+    # ])
+
+    # rotation
+    theta = (5 * 3.14) / (180)
     test_trajectory = np.array([
-        xdata - translation_variance * 0.8,
-        # Note that we're translating by the variance to simulate an extreme case, rather than sampling from a normal distribution.
-        ydata - translation_variance * 0.8
+        xdata*np.cos(theta)-ydata*np.sin(theta),
+        xdata * np.sin(theta) + ydata * np.cos(theta)
     ])
 
     test_noise_variance = 1.0
     test_noise = np.random.normal(np.zeros(test_trajectory.shape), test_noise_variance)
 
     for test_noise_weight in np.linspace(0.01, 1.0, 10):
+        # test_noise_weight = 0.5*np.random.rand(test_trajectory.shape[0],test_trajectory.shape[1])
+        # test = test_noise * test_noise_weight
 
         test_trajectory_noisy = test_trajectory + (test_noise * test_noise_weight)
 
@@ -90,15 +116,18 @@ def spatial_robustness():
         # The variance for the X DOF is a very high value so that the observed x-values are not heavily weighted in conditional inference.
         # This is desirable because we don't have observed x-values, we want to generate them based on the observed y-values.
         # This mimics an HRI scenario in which we only observe one agent's actions and want to generate the other agent's actions in response.
-        observation_noise = np.array([[100000.0, 0.0], [0.0, test_noise_variance * test_noise_weight]])
+        # observation_noise = np.array([[100000.0, 0.0], [0.0, test_noise_variance * test_noise_weight]])
+        observation_noise = np.array([[100000.0, 0.0], [0.0, 0.1]])
 
-        observable_samples = 30
+        observable_samples = 70
         primitive.initialize_filter(phase_velocity = np.mean(phase_velocities), phase_var = np.var(phase_velocities))
         gen_trajectory, phase = primitive.generate_probable_trajectory_recursive(test_trajectory_partial[:, :observable_samples], observation_noise, num_samples = 100 - observable_samples)
 
         mean_trajectory = primitive.get_mean_trajectory()
 
-        primitive.plot_partial_trajectory(gen_trajectory, test_trajectory_noisy[:, :observable_samples], mean_trajectory)
+        # plot training trajectory
+        primitive.plot_all_trajectories(train_trajectories,gen_trajectory, test_trajectory_noisy[:, :observable_samples], mean_trajectory)
+        # primitive.plot_partial_trajectory(gen_trajectory, test_trajectory_noisy[:, :observable_samples], mean_trajectory)
 
 def main():
     spatial_robustness()

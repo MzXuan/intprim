@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.random
-from .. import basis_model
-from .. import bayesian_interaction_primitives as bip
+from intprim import basis_model
+from intprim import bayesian_interaction_primitives as bip
 
 def temporal_robustness():
     np.random.seed(213413414)
@@ -121,3 +121,12 @@ def temporal_robustness():
         primitive.plot_partial_trajectory(gen_trajectory, test_trajectory[:, :observed_index], mean_trajectory)
 
         prev_observed_index = observed_index
+
+
+
+def main():
+    temporal_robustness()
+
+
+if __name__ == '__main__':
+    main()
