@@ -52,7 +52,9 @@ def visual_data(data_dict):
     plt.show()
 
 
-
+# def revert_traj():
+#     pkl_file = open(file_name, 'rb')
+#     datasets = pickle.load(pkl_file)
 
 
 def main():
