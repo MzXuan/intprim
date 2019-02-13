@@ -62,7 +62,7 @@ def main():
     # datasets = pickle.load(pkl_file)
     # print('length of tasks:', len(datasets))
 
-    generate_data('../dataset/reg_fmt_datasets.pkl')
+    generate_data('../dataset/reg_fmt_datasets_reg.pkl')
 
 
 if __name__ == '__main__':

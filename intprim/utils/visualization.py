@@ -77,7 +77,7 @@ def plot_3d_trajectories(train_trajectories, gen_trajectory, partial_observed_tr
     fig = plt.figure()
 
     # plot DOFs
-    obs_ratio = len(partial_observed_trajectory[0]) / len(train_trajectories[0][0])
+    obs_ratio = len(partial_observed_trajectory[0]) / len(true_trajectory[0])
     for index, degree in enumerate(gen_trajectory):
         new_plot = plt.subplot(len(trajectory), 1, index + 1)
 
@@ -99,3 +99,12 @@ def plot_3d_trajectories(train_trajectories, gen_trajectory, partial_observed_tr
         new_plot.legend()
 
     plt.show()
+
+
+def plot_phase(phase_list):
+    fig = plt.figure("phase ratio")
+    x=range(len(phase_list))
+    plt.plot(phase_list["true_obs"],"-*",label="true phase")
+    plt.plot(phase_list["pred_obs"],"-*", label="predict phase")
+    plt.legend()
+    # plt.show()
