@@ -2,6 +2,7 @@ import numpy as np
 import numpy.random
 from intprim import basis_model
 from intprim import bayesian_interaction_primitives as bip
+import intprim.utils.visualization as vis
 
 def spatial_robustness():
     np.random.seed(213413414)
@@ -69,14 +70,10 @@ def spatial_robustness():
         xdata_t = xdata + translation_noise_x
         ydata_t = ydata + translation_noise_y
 
-
-
         train_trajectory = np.array([xdata_t, ydata_t])
 
-
-
         # apply rotation noise
-        rotation_noise = 10*np.random.normal(0,1)
+        rotation_noise = 15*np.random.normal(0,1)
         theta = (rotation_noise * 3.14) / (180)
         train_trajectory = np.array([
             xdata_t*np.cos(theta)-ydata_t*np.sin(theta),
@@ -105,7 +102,7 @@ def spatial_robustness():
     # ])
 
     # rotation
-    theta = (30 * 3.14) / (180)
+    theta = (10 * 3.14) / (180)
     test_trajectory = np.array([
         xdata*np.cos(theta)-ydata*np.sin(theta),
         xdata * np.sin(theta) + ydata * np.cos(theta)
@@ -137,7 +134,7 @@ def spatial_robustness():
         mean_trajectory = primitive.get_mean_trajectory()
 
         # plot training trajectory
-        primitive.plot_all_trajectories(train_trajectories,gen_trajectory, test_trajectory_noisy[:, :observable_samples], mean_trajectory)
+        vis.plot_all_trajectories(train_trajectories,gen_trajectory, test_trajectory_noisy[:, :observable_samples], mean_trajectory)
         # primitive.plot_partial_trajectory(gen_trajectory, test_trajectory_noisy[:, :observable_samples], mean_trajectory)
 
 def main():
