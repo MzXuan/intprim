@@ -273,19 +273,38 @@ class BayesianInteractionPrimitive(object):
 
         phase, mean = self.filter.localize(trajectory.T, observation_noise)
 
-        new_trajectory = np.zeros((self.num_dof, num_samples), dtype = DTYPE)
+        # new_trajectory = np.zeros((self.num_dof, num_samples), dtype = DTYPE)
+        #
+        # # Create a sequence from the stored basis weights.
+        # domain = np.linspace(phase, 1, num_samples, dtype = DTYPE)
+        #
+        # for idx in range(num_samples):
+        #     basis_matrix = self.get_block_diagonal_basis_matrix(domain[idx : idx + 1])
+        #
+        #     dist_mean = np.dot(basis_matrix.T, mean).flatten()
+        #
+        #     new_trajectory[:, idx] = dist_mean
+
+        # Create whole trajectory
+        whole_num_samples = 100
+
+        new_trajectory = np.zeros((self.num_dof, whole_num_samples), dtype = DTYPE)
 
         # Create a sequence from the stored basis weights.
-        domain = np.linspace(phase, 1, num_samples, dtype = DTYPE)
-
-        for idx in range(num_samples):
-            basis_matrix = self.get_block_diagonal_basis_matrix(domain[idx : idx + 1])
+        domain = np.linspace(0, 1, whole_num_samples, dtype = DTYPE)
+        for idx in range(whole_num_samples):
+            basis_matrix = self.get_block_diagonal_basis_matrix(domain[idx: idx + 1])
 
             dist_mean = np.dot(basis_matrix.T, mean).flatten()
 
             new_trajectory[:, idx] = dist_mean
 
+
         return new_trajectory, phase
+
+
+
+
 
     # Displays the probability that the current trajectory matches the stored trajectores at every instant in time.
     def plot_distribution(self, mean, upper_bound, lower_bound):

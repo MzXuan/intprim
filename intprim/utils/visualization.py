@@ -30,7 +30,7 @@ def plot_all_trajectories(train_trajectories, gen_trajectory, partial_observed_t
         domain = np.linspace(0, obs_ratio, len(partial_observed_trajectory[index]))
         new_plot.plot(domain, partial_observed_trajectory[index], color="#6ba3ff", label="Observed.")
 
-        domain = np.linspace(obs_ratio, 1, len(gen_trajectory[index]))
+        domain = np.linspace(0, 1, len(gen_trajectory[index]))
         new_plot.plot(domain, gen_trajectory[index], color="#ff6a6a", label="Generated.")
 
         if (mean_trajectory is not None):
