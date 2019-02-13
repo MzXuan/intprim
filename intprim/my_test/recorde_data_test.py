@@ -24,8 +24,7 @@ def record_data():
     #load dataset
     data_dict = load_data.generate_data('../dataset/reg_fmt_datasets.pkl')
     traj_x_set,traj_r_set = seperate_data(data_dict)
-    # train_set = traj_set[0:-test_num]
-    # test_set = traj_set[-test_num:]
+
 
     # Initialize a BIP object with 2 DOF named "X" and "Y" which are approximated by 8 basis functions.
     primitive = bip.BayesianInteractionPrimitive(6, ['hx', 'hy','hz','rx','ry','rz'], 10)
@@ -38,8 +37,8 @@ def record_data():
         train_trajectory = np.concatenate((traj_x[:,0:3],traj_r[:,0:3]), axis = 1).T
         primitive.add_demonstration(train_trajectory)
         phase_velocities.append(1.0 / train_trajectory.shape[1])
-
         train_trajectories.append(train_trajectory)
+
 
     # test
     for (test_x,test_r) in zip(traj_x_set[-test_num:],traj_r_set[-test_num:]):
@@ -48,7 +47,7 @@ def record_data():
         test_trajectory_partial[3:6,:] = 0.0
         observable_samples = 20
 
-        # observation_noise = np.array([[0.2,0.0,0.0],[0.0,0.2,0.0],[0.0,0.0,0.2]])
+        # observation_noise matrix
         observation_noise = np.zeros((6,6), dtype = np.float64)
         np.fill_diagonal(observation_noise,0.3)
         observation_noise=observation_noise

@@ -103,7 +103,7 @@ def temporal_robustness():
     test_trajectory_noisy = np.array(np.random.normal(test_trajectory, test_noise_variance))
 
     test_trajectory_partial = np.array(test_trajectory_noisy, copy = True)
-    test_trajectory_partial[0, :] = 0.0;
+    test_trajectory_partial[0, :] = 0.0
 
     # Generating the observation noise matrix.
     # The variance for the X DOF is a very high value so that the observed x-values are not heavily weighted in conditional inference.
