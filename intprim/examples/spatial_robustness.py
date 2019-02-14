@@ -94,7 +94,7 @@ def spatial_robustness():
 
         observable_samples = 30
         primitive.initialize_filter(phase_velocity = np.mean(phase_velocities), phase_var = np.var(phase_velocities))
-        gen_trajectory, phase = primitive.generate_probable_trajectory_recursive(test_trajectory_partial[:, :observable_samples], observation_noise, num_samples = 100 - observable_samples)
+        gen_trajectory, phase, _ = primitive.generate_probable_trajectory_recursive(test_trajectory_partial[:, :observable_samples], observation_noise, num_samples = 100 - observable_samples)
 
         mean_trajectory = primitive.get_mean_trajectory()
 

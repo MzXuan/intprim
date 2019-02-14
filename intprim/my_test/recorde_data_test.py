@@ -29,6 +29,8 @@ def seperate_data(data_dict):
 
 def record_data():
     test_num = 10
+    h_dim=3
+    r_dim=7
 
     #load dataset
     data_dict = load_data.generate_data('../dataset/reg_fmt_datasets_reg.pkl')
@@ -36,14 +38,14 @@ def record_data():
 
 
     # Initialize a BIP object with 2 DOF named "X" and "Y" which are approximated by 8 basis functions.
-    primitive = bip.BayesianInteractionPrimitive(6, ['hx', 'hy','hz','rx','ry','rz'],10)
+    primitive = bip.BayesianInteractionPrimitive(h_dim+r_dim, ['hx', 'hy','hz','rx','ry','rz','w','x','y','z'],10)
 
     phase_velocities = []
 
     train_trajectories = []  # for plot
 
     for (traj_x, traj_r) in zip(traj_x_set[0:-test_num],traj_r_set[0:-test_num]):
-        train_trajectory = np.concatenate((traj_x[:,0:3],traj_r[:,0:3]), axis = 1).T
+        train_trajectory = np.concatenate((traj_x[:,0:h_dim],traj_r[:,0:r_dim]), axis = 1).T
         primitive.add_demonstration(train_trajectory)
         phase_velocities.append(1.0 / train_trajectory.shape[1])
         train_trajectories.append(train_trajectory)
@@ -52,25 +54,27 @@ def record_data():
     # test
     for (test_x,test_r) in zip(traj_x_set[-test_num:],traj_r_set[-test_num:]):
 
-            test_trajectory = np.concatenate((test_x[:,0:3],test_r[:,0:3]), axis=1).T
+            test_trajectory = np.concatenate((test_x[:,0:h_dim],test_r[:,0:r_dim]), axis=1).T
             test_trajectory_partial = np.array(test_trajectory, copy = True)
-            test_trajectory_partial[3:6,:] = 0.0
+            test_trajectory_partial[h_dim:h_dim+r_dim,:] = 0.0
 
             # observation_noise matrix
-            observation_noise = np.zeros((6, 6), dtype=np.float64)
+            observation_noise = np.zeros((h_dim+r_dim, h_dim+r_dim), dtype=np.float64)
             np.fill_diagonal(observation_noise, 0.1)
             observation_noise = observation_noise
-            for i in range(3, 6):
+            for i in range(h_dim, h_dim+r_dim):
                 observation_noise[i][i] = 100000
 
             true_obs_list =[]
             pred_obs_list =[]
             gen_traj_list = []
-            for observable_samples in range (1,len(test_trajectory[0])//2,5):
+
+            var_list = []
+            for observable_samples in range (1,len(test_trajectory[0]),5):
                 obs_ratio = observable_samples/len(test_trajectory[0])
 
                 primitive.initialize_filter(phase_velocity=np.mean(phase_velocities), phase_var=np.var(phase_velocities))
-                gen_trajectory, phase = primitive.generate_probable_trajectory_recursive(
+                gen_trajectory, phase, var = primitive.generate_probable_trajectory_recursive(
                     test_trajectory_partial[:, :observable_samples], observation_noise, num_samples=100 - observable_samples)
 
                 true_obs_list.append(obs_ratio)
@@ -79,8 +83,10 @@ def record_data():
                 mean_trajectory = primitive.get_mean_trajectory()
 
                 #plot all gen traj
+                var_list.append(var)
                 gen_traj_list.append(gen_trajectory)
 
+            vis.plot_var(var_list)
             vis.plot_all_gens(gen_traj_list)
 
             # plot true obs ratio and real ratio

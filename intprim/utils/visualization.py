@@ -145,11 +145,14 @@ def plot_all_gens(gen_list):
             new_plot.set_title('Trajectory for degree ' + str(index))
             new_plot.legend()
 
-    # ax = fig.gca(projection='3d')
-    # for (id, traj) in enumerate(gen_list):
-    #     ax.plot(traj[3], traj[4], traj[5], "-", color="gray",label=str(id))
-    #     plt.legend()
-
-
 
 #TODO: print var
+def plot_var(var_list):
+    fig = plt.figure("var")
+    var_matrix = np.asarray(var_list)
+    var_matrix=var_matrix.T
+    #ramdom select parameters
+    domain = np.linspace(0, 1, var_matrix.shape[1])
+    for i in range(1,var_matrix.shape[0],10):
+        plt.plot(domain, var_matrix[i,:])
+

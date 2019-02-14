@@ -316,14 +316,14 @@ class BayesianInteractionPrimitive(object):
 
         new_trajectory=dict(mean=new_trajectory_mean,up=new_trajectory_up,low=new_trajectory_low)
 
-        return new_trajectory, phase
+        return new_trajectory, phase, variance
 
 
     def create_traj(self, mean, var=0,direct=1):
         # Create whole trajectory
         whole_num_samples = 100
         if var is not 0:
-            mean = mean+direct * 0.5* np.sqrt(var) # todo: gaussian sample
+            mean = mean+direct *var # todo: gaussian sample
 
 
         new_trajectory = np.zeros((self.num_dof, whole_num_samples), dtype = DTYPE)
