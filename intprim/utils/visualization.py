@@ -13,9 +13,16 @@ def plot_all_trajectories(train_trajectories, gen_trajectory, partial_observed_t
     end_partial = float(partial_observed_trajectory.shape[1]) / (
             float(partial_observed_trajectory.shape[1]) + float(trajectory.shape[1]))
 
-    plt.plot(gen_trajectory[0], gen_trajectory[1], "--", color="#ff6a6a", label="Generated", linewidth=2.0)
     plt.plot(partial_observed_trajectory[0], partial_observed_trajectory[1], color="#6ba3ff", label="Observed",
              linewidth=2.0)
+
+    # gen mean, upper,lower bound
+    plt.plot(gen_trajectory['mean'][0], gen_trajectory['mean'][1], "-", color="#ff6a6a", label="Generated mean", linewidth=2.0)
+    plt.plot(gen_trajectory['up'][0], gen_trajectory['up'][1], "--", color="#fe5a6a", label="Generated up",
+             linewidth=2.0)
+    plt.plot(gen_trajectory['low'][0], gen_trajectory['low'][1], "--", color="#fe5a6a", label="Generated low",
+             linewidth=2.0)
+
     if (mean_trajectory is not None):
         plt.plot(mean_trajectory[0], mean_trajectory[1], color="#85d87f", label="Mean")
     plt.legend()
@@ -25,14 +32,17 @@ def plot_all_trajectories(train_trajectories, gen_trajectory, partial_observed_t
     fig = plt.figure()
 
     obs_ratio = len(partial_observed_trajectory[0]) / len(train_trajectories[0][0])
-    for index, degree in enumerate(gen_trajectory):
+    for index, degree in enumerate(partial_observed_trajectory):
         new_plot = plt.subplot(len(trajectory), 1, index + 1)
 
         domain = np.linspace(0, obs_ratio, len(partial_observed_trajectory[index]))
         new_plot.plot(domain, partial_observed_trajectory[index], color="#6ba3ff", label="Observed.")
 
-        domain = np.linspace(0, 1, len(gen_trajectory[index]))
-        new_plot.plot(domain, gen_trajectory[index], "--", color="#ff6a6a", label="Generated.")
+        domain = np.linspace(0, 1, len(gen_trajectory['mean'][index]))
+        new_plot.plot(domain, gen_trajectory['mean'][index], "-", color="#ff6a6a", label="Generated mean")
+        new_plot.plot(domain, gen_trajectory['up'][index], "--", color="#fe5a6a", label="Generated up")
+        new_plot.plot(domain, gen_trajectory['low'][index], "--", color="#fe5a6a", label="Generated low")
+
 
         if (mean_trajectory is not None):
             domain = np.linspace(0, 1, len(mean_trajectory[index]))
@@ -58,8 +68,20 @@ def plot_3d_trajectories(train_trajectories, gen_trajectory, partial_observed_tr
     end_partial = float(partial_observed_trajectory.shape[1]) / (
             float(partial_observed_trajectory.shape[1]) + float(trajectory.shape[1]))
 
-    ax.plot(gen_trajectory[0], gen_trajectory[1],gen_trajectory[2], "--", color="#ff6a6a", label="Predicted human", linewidth=2.0)
-    ax.plot(gen_trajectory[3], gen_trajectory[4], gen_trajectory[5], "--", color="#ff6a6a", label="Generated robot",
+    mean_gen=gen_trajectory['mean']
+    up_gen=gen_trajectory['up']
+    low_gen=gen_trajectory['low']
+
+    ax.plot(mean_gen[0], mean_gen[1],mean_gen[2], "-", color="#ff6a6a", label=" Mean Predicted human", linewidth=2.0)
+    ax.plot(mean_gen[3], mean_gen[4], mean_gen[5], "-", color="#ff6a6a", label=" Mean Generated robot",
+            linewidth=2.0)
+
+    ax.plot(up_gen[0], up_gen[1], up_gen[2], "--", color="#ff6a6a", label=" Up Predicted human", linewidth=2.0)
+    ax.plot(up_gen[3], up_gen[4], up_gen[5], "--", color="#ff6a6a", label=" Up Generated robot",
+            linewidth=2.0)
+
+    ax.plot(low_gen[0], low_gen[1], low_gen[2], "--", color="#ff6a6a", label=" Low Predicted human", linewidth=2.0)
+    ax.plot(low_gen[3], low_gen[4], low_gen[5], "--", color="#ff6a6a", label=" Low Generated robot",
             linewidth=2.0)
 
     if (mean_trajectory is not None):
@@ -78,14 +100,16 @@ def plot_3d_trajectories(train_trajectories, gen_trajectory, partial_observed_tr
 
     # plot DOFs
     obs_ratio = len(partial_observed_trajectory[0]) / len(true_trajectory[0])
-    for index, degree in enumerate(gen_trajectory):
+    for index, degree in enumerate(mean_gen):
         new_plot = plt.subplot(len(trajectory), 1, index + 1)
 
         domain = np.linspace(0, obs_ratio, len(partial_observed_trajectory[index]))
         new_plot.plot(domain, partial_observed_trajectory[index], color="#6ba3ff", label="Observed")
 
-        domain = np.linspace(0, 1, len(gen_trajectory[index]))
-        new_plot.plot(domain, gen_trajectory[index], "--", color="#ff6a6a", label="Generated")
+        domain = np.linspace(0, 1, len(mean_gen[index]))
+        new_plot.plot(domain, mean_gen[index], "-", color="#ff6a6a", label="Generated mean")
+        new_plot.plot(domain, up_gen[index], "--", color="#ff6a6a", label="Generated up")
+        new_plot.plot(domain, low_gen[index], "--", color="#ff6a6a", label="Generated low")
 
         if (mean_trajectory is not None):
             domain = np.linspace(0, 1, len(mean_trajectory[index]))
@@ -96,7 +120,7 @@ def plot_3d_trajectories(train_trajectories, gen_trajectory, partial_observed_tr
             new_plot.plot(domain, true_trajectory[index], color="yellow", label="Truth")
 
         new_plot.set_title('Trajectory for degree ' + str(index))
-        new_plot.legend()
+        new_plot.legend( bbox_to_anchor=(1.1, 1.05))
 
     plt.show()
 
@@ -108,3 +132,24 @@ def plot_phase(phase_list):
     plt.plot(phase_list["pred_obs"],"-*", label="predict phase")
     plt.legend()
     # plt.show()
+
+
+def plot_all_gens(gen_list):
+    fig = plt.figure("gen trajs")
+    for (id, traj_var) in enumerate(gen_list):
+        traj = traj_var['mean']
+        for index, degree in enumerate(traj):
+            new_plot = plt.subplot(len(traj), 1, index + 1)
+            domain = np.linspace(0, 1, len(traj[index]))
+            new_plot.plot(domain, traj[index], "--", color="#ff6a6a", label="Generated"+str(id))
+            new_plot.set_title('Trajectory for degree ' + str(index))
+            new_plot.legend()
+
+    # ax = fig.gca(projection='3d')
+    # for (id, traj) in enumerate(gen_list):
+    #     ax.plot(traj[3], traj[4], traj[5], "-", color="gray",label=str(id))
+    #     plt.legend()
+
+
+
+#TODO: print var

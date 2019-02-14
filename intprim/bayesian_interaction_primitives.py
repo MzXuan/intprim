@@ -92,7 +92,7 @@ class EKFSLAM(object):
             self.state_mean[0] = 0.0
 
         # Return phase and updated weights
-        return self.state_mean[0], self.state_mean[2:]
+        return self.state_mean[0], self.state_mean[2:], self.state_cov
 
 class BayesianInteractionPrimitive(object):
     """The BayesianInteractionPrimitive class performs training and inference for a cooperative scenario.
@@ -271,7 +271,7 @@ class BayesianInteractionPrimitive(object):
         if(self.filter is None):
             self.initialize_filter()
 
-        phase, mean = self.filter.localize(trajectory.T, observation_noise)
+        phase, mean, cov = self.filter.localize(trajectory.T, observation_noise)
 
         # new_trajectory = np.zeros((self.num_dof, num_samples), dtype = DTYPE)
         #
@@ -290,6 +290,11 @@ class BayesianInteractionPrimitive(object):
 
         new_trajectory = np.zeros((self.num_dof, whole_num_samples), dtype = DTYPE)
 
+        variance = []
+        for i in range(2,len(cov)):
+            variance.append(cov[i][i])
+
+
         # Create a sequence from the stored basis weights.
         domain = np.linspace(0, 1, whole_num_samples, dtype = DTYPE)
         for idx in range(whole_num_samples):
@@ -299,11 +304,40 @@ class BayesianInteractionPrimitive(object):
 
             new_trajectory[:, idx] = dist_mean
 
+        # Create whole trajectory
+        variance = []
+        for i in range(2,len(cov)):
+            variance.append(cov[i][i])
+        variance=np.asarray(variance)
+
+        new_trajectory_mean = self.create_traj(mean)
+        new_trajectory_up = self.create_traj(mean, variance, 1)
+        new_trajectory_low = self.create_traj(mean, variance, -1)
+
+        new_trajectory=dict(mean=new_trajectory_mean,up=new_trajectory_up,low=new_trajectory_low)
 
         return new_trajectory, phase
 
 
+    def create_traj(self, mean, var=0,direct=1):
+        # Create whole trajectory
+        whole_num_samples = 100
+        if var is not 0:
+            mean = mean+direct * 0.5* np.sqrt(var) # todo: gaussian sample
 
+
+        new_trajectory = np.zeros((self.num_dof, whole_num_samples), dtype = DTYPE)
+
+        # Create a sequence from the stored basis weights.
+        domain = np.linspace(0, 1, whole_num_samples, dtype = DTYPE)
+        for idx in range(whole_num_samples):
+            basis_matrix = self.get_block_diagonal_basis_matrix(domain[idx: idx + 1])
+
+            dist_mean = np.dot(basis_matrix.T, mean).flatten()
+
+            new_trajectory[:, idx] = dist_mean
+
+        return new_trajectory
 
 
     # Displays the probability that the current trajectory matches the stored trajectores at every instant in time.

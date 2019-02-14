@@ -13,6 +13,7 @@ MAX_LEN = 50
 
 def data_gen(traj_seqs):
     data_dict = []
+    random.seed(87562)
     random.shuffle(traj_seqs)
     for traj in traj_seqs:
         traj_len = len(traj['input'])
